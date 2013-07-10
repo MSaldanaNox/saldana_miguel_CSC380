@@ -13,7 +13,7 @@ import javax.swing.JOptionPane;
 public class MathClient {
 
 	public static void main(String[] args) {
-		for (;;) {
+		while (true) {
 			try {
 				Socket server = new Socket("", 8080);
 				OutputStream serverOut = server.getOutputStream();
