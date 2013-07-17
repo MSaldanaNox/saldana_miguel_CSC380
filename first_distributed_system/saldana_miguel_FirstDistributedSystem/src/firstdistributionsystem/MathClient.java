@@ -22,17 +22,24 @@ public class MathClient {
 			Socket server = new Socket("", 8080);
 			OutputStream serverOut = server.getOutputStream();
 			InputStream serverIn = server.getInputStream();
-			
-
 			PrintWriter serverWrite = new PrintWriter(serverOut, true);
 			
-			String fromServer = printFirstResponse(serverIn);
-
+			//Classes
+			String classes = getClassesFromServer(serverIn);
 			String prompt;
 			do {
-				prompt = JOptionPane.showInputDialog(fromServer);
+				prompt = JOptionPane.showInputDialog(classes);
 			} while (prompt == null || prompt.isEmpty()
-					|| !function(prompt, fromServer));
+					|| !function(prompt, classes));
+			serverWrite.println(prompt);
+			serverWrite.flush();
+
+			// Methods
+			String theMethods = getMethodsFromServer(serverIn);
+			do {
+				prompt = JOptionPane.showInputDialog(theMethods);
+			} while (prompt == null || prompt.isEmpty()
+					|| !function(prompt, theMethods));
 			String input = "";
 			do {
 				input = JOptionPane
@@ -41,7 +48,7 @@ public class MathClient {
 			} while (input == null || input.isEmpty());
 
 			serverWrite.println(prompt + " " + input + " " + toSend);
-
+			serverWrite.flush();
 			server.shutdownOutput();
 
 			printServerResponse(serverIn);
@@ -61,18 +68,44 @@ public class MathClient {
 			if (options[i].contains(c))
 			{
 				isIn = true;
-				toSend = param.get(i-1);
+				if(param.size() != 0)
+					toSend = param.get(i-1);
 			}
 		}
 		return isIn;
 	}
 
-	private static String printFirstResponse(InputStream serverIn) {
+	private static String getClassesFromServer(InputStream serverIn)
+	{
+		String resp = "";
+		
+		try {
+			BufferedReader read = new BufferedReader(new InputStreamReader(
+					serverIn));
+			resp = read.readLine();
+			
+			String[] theClasses = resp.split(", ");
+			
+			resp = "The current classes are: \n";
+			
+			for(String s : theClasses)
+			{
+				String[] temp =  s.split("\\.");
+				resp += temp[temp.length-1] + "\n";
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		return resp;
+	}
+	
+	private static String getMethodsFromServer(InputStream serverIn) {
 		String resp = "";
 		try {
 			BufferedReader read = new BufferedReader(new InputStreamReader(
 					serverIn));
-			resp += read.readLine();
+			resp = read.readLine();
 			String[] methods = resp.split(" ");
 			List<String> names = new ArrayList<String>();
 			List<String> params = new ArrayList<String>();

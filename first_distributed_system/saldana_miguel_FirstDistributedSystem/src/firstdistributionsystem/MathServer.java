@@ -11,6 +11,12 @@ import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -26,7 +32,8 @@ public class MathServer implements Runnable {
 	static ServerSocket serverSocket;
 	Socket clientSocket;
 	static MathServer server;
-
+	private static String packageName = "reflectclasses.";
+	
 	public MathServer(Socket socket) {
 		this.clientSocket = socket;
 	}
@@ -55,49 +62,47 @@ public class MathServer implements Runnable {
 
 	private void sendClasses() {
 		try {
-			JavaCompiler jcompile = ToolProvider.getSystemJavaCompiler();
-			StandardJavaFileManager fileManager = jcompile.getStandardFileManager(null, null, null);
-
-			JavaFileManager.Location loc = StandardLocation.CLASS_PATH;
 			String packageName = "reflectclasses";
-			Set<JavaFileObject.Kind> kinds = new HashSet<JavaFileObject.Kind>();
-			kinds.add(JavaFileObject.Kind.CLASS);
-			boolean loop = false;
+			URL packageUrl = this.getClass().getClassLoader()
+					.getResource(packageName.replace(".", "/"));
+			List allClasses = new ArrayList<>();
+			if (packageUrl != null) {
+				Path packagePath = Paths.get(packageUrl.toURI());
+				if (Files.isDirectory(packagePath)) {
+					try (DirectoryStream<Path> ds = Files.newDirectoryStream(
+							packagePath, "*.class")) {
+						for (Path d : ds) {
+							allClasses.add(Class.forName(packageName
+									+ "."
+									+ d.getFileName().toString()
+											.replace(".class", "")));
+						}
+					}
+				}
+				String cNames = "";
+				for (Object o : allClasses) {
+					cNames += o.toString() + ", ";
+				}
 
-			Iterable<JavaFileObject> javaFiles;
-
-			javaFiles = fileManager.list(loc, packageName, kinds, loop);
-
-			List<Class> classes = new ArrayList<Class>();
-			String cNames = "";
-			String temp = "";
-			for (JavaFileObject javaFileObject : javaFiles) {
-				String cName = javaFileObject.getName();
-				int lIndex = cName.lastIndexOf('/');
-				int rIndex = cName.lastIndexOf('.');
-
-				temp = cName.substring(lIndex + 1, rIndex);
-				cNames += temp;
-				cNames += " ";
-				classes.add(Class.forName(packageName + "." + temp));
+				PrintWriter serverWrite = new PrintWriter(
+						clientSocket.getOutputStream(), true);
+				serverWrite.println(cNames);
+				serverWrite.flush();
 			}
-			
-//			PrintWriter serverWrite = new PrintWriter(clientSocket.getOutputStream(), true);
-			System.out.println(cNames);
-//			serverWrite.println(cNames);
-//			serverWrite.flush();
 		} catch (IOException e) {
 			e.printStackTrace();
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
+		} catch (URISyntaxException e) {
+			e.printStackTrace();
 		}
 	}
 
-	private void sendMethods() {
+	private void sendMethods(String className) {
 		PrintWriter serverWrite;
 		try {
 			Class<?> c;
-			c = Class.forName("reflectclasses.MathLogic");
+			c = Class.forName(packageName + className);
 			serverWrite = new PrintWriter(clientSocket.getOutputStream(), true);
 			serverWrite.println(printMethods(c.getDeclaredMethods()));
 			serverWrite.flush();
@@ -120,7 +125,10 @@ public class MathServer implements Runnable {
 
 		for (Member member : members) {
 			if (member instanceof Method)
-				s += ((Method) member).toString() + " ";
+			{
+				if(!((Method) member).toString().contains("getInstance"))
+					s += ((Method) member).toString() + " ";
+			}
 		}
 
 		return s;
@@ -139,6 +147,8 @@ public class MathServer implements Runnable {
 			result = "java.lang.Double";
 		if (convert.equalsIgnoreCase("boolean"))
 			result = "java.lang.Boolean";
+		if (convert.equalsIgnoreCase("long"))
+			result = "java.lang.Long";
 
 		return result;
 	}
@@ -147,11 +157,14 @@ public class MathServer implements Runnable {
 	public void run() {
 		try {
 			server.sendClasses();
-			server.sendMethods();
 			
 			Scanner clientScan;
 			clientScan = new Scanner(clientSocket.getInputStream());
 			clientScan.useDelimiter("$");
+			String response = clientScan.nextLine();
+			
+			server.sendMethods(response);
+
 			String[] res = clientScan.nextLine().split(" ");
 
 			String func = res[0];
@@ -168,10 +181,7 @@ public class MathServer implements Runnable {
 			PrintWriter serverWrite = new PrintWriter(
 					clientSocket.getOutputStream(), true);
 
-			Class c = Class.forName("firstdistributionsystem.MathLogic");
-
-			Constructor[] con = c.getConstructors();
-			MathLogic ra = (MathLogic) con[0].newInstance();
+			Class c = (Class) Class.forName(packageName+""+response);
 			Method[] mets = c.getDeclaredMethods();
 			Method met = null;
 
@@ -194,8 +204,8 @@ public class MathServer implements Runnable {
 						null, (String) complete[e]);
 				e++;
 			}
-			serverWrite.println(met.invoke(ra, complete));
-//method.invoke(c.getDeclaredMethod("getInstance", null).invoke(null, null) complete);
+			serverWrite.println(met.invoke(c.getDeclaredMethod("getInstance",null).invoke(null, null), complete));
+
 			clientSocket.shutdownOutput();
 			serverWrite.flush();
 			serverSocket.close();
@@ -205,9 +215,6 @@ public class MathServer implements Runnable {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (InstantiationException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IllegalAccessException e) {
@@ -227,5 +234,4 @@ public class MathServer implements Runnable {
 			e1.printStackTrace();
 		}
 	}
-
 }

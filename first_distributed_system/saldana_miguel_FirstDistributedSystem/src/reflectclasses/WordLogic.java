@@ -2,19 +2,31 @@ package reflectclasses;
 
 public class WordLogic {
 
-	public WordLogic()
+	private static WordLogic wl;
+	
+	private WordLogic()
 	{
 		
 	}
 	
-	static String returnWord(String s)
+	public static WordLogic getInstance()
+	{
+		if(wl == null)
+		{
+			wl = new WordLogic();
+		}
+		
+		return wl;
+	}
+	
+	static int returnNumber(int s)
 	{
 		return s;
 	}
 	
-	static String combineWords(String s, String r)
+	static int multiply(int s, int r)
 	{
-		return s + " and " + r;
+		return s*r;
 	}
 	
 }

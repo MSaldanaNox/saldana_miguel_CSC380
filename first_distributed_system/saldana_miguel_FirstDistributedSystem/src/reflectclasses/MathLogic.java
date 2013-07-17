@@ -2,9 +2,20 @@ package reflectclasses;
 
 public class MathLogic {
 
-	public MathLogic()
+	private static MathLogic mL;
+	
+	private MathLogic()
 	{
 		
+	}
+	
+	public static MathLogic getInstance()
+	{
+		if(mL == null)
+		{
+			mL = new MathLogic();
+		}
+		return mL;
 	}
 	
 	static int add(int f, int s) {
