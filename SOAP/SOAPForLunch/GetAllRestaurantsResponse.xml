@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<soap:Envelope
+        xmlns:soap="http://www.w3.org/2001/12/soap-envelope"
+        soap:encodingStyle="http://www.w3.org/2001/12/soap-encoding">
+
+    <soap:Body xmlns:m="http://localhost:8080/restaurants">
+        <m:getAllRestaurantsResponse>
+            <m:restaurant>
+                <m:id></m:id>
+                <m:name>Luke's Diner</m:name>
+            </m:restaurant>
+            <m:restaurant>
+                <m:id></m:id>
+                <m:name>Jane's Place</m:name>
+            </m:restaurant>
+        </m:getAllRestaurantsResponse>
+    </soap:Body>
+
+</soap:Envelope>

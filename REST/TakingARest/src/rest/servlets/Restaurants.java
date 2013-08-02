@@ -61,6 +61,7 @@ public class Restaurants extends HttpServlet {
 			res.getMenu().getMenuItems().add(mi);
 			
 			marshaller.marshal(res, resp.getWriter());
+			marshaller.marshal(res, new File("restaurant.xml"));
 		} catch (JAXBException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
