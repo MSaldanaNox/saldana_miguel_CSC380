@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+	<xs:element name="restaurant">
+		<xs:complexType>
+		<xs:sequence>
+			<xs:element name="menu" minOccurs="1" maxOccurs="unbounded">
+				<xs:complexType>
+					<xs:sequence>
+					<xs:element name="MenuItem" minOccurs="1" maxOccurs="unbounded">
+						<xs:complexType>
+							<xs:attribute name="item" type="xs:string" use="required"/>
+							<xs:attribute name="price" type="xs:decimal" use="required"/>
+						</xs:complexType>
+					</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+		</xs:sequence>
+		<xs:attribute name="name" type="xs:string" use="required"/>
+		</xs:complexType>
+	</xs:element>
+</xs:schema>

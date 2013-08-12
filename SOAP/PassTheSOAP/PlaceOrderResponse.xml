@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<soap:Envelope
+        xmlns:soap="http://www.w3.org/2001/12/soap-envelope"
+        soap:encodingStyle="http://www.w3.org/2001/12/soap-encoding">
+
+    <soap:Body xmlns:m="http://localhost:8080/restaurants">
+        <m:placeOrderResponse>
+            <m:response>Your order has been placed!</m:response>
+        </m:placeOrderResponse>
+    </soap:Body>
+
+</soap:Envelope>

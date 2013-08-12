@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<soap:Envelope xmlns:soap="http://www.w3.org/2001/12/soap-envelope"
+               soap:encodingStyle="http://www.w3.org/2001/12/soap-encoding">
+
+    <soap:Body xmlns:m="http://localhost:8080/restaurants">
+        <m:placeOrder>
+            <m:restaurant>
+                <m:id></m:id>
+                <m:name>Burger Restaurant</m:name>
+            </m:restaurant>
+            <m:menuItem>
+                <m:name>Burger</m:name>
+            </m:menuItem>
+        </m:placeOrder>
+    </soap:Body>
+
+</soap:Envelope>
